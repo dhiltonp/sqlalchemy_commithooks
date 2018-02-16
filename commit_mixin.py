@@ -167,17 +167,11 @@ class Session:
                 session._do_failed_commits()
             session._after_failed_commit_active = False
 
-        # @event.listens_for(cls, "after_transaction_create")
+        # @event.listens_for(cls, "after_begin")
         # def transaction_enter(session: Session, transaction):
-        #     print("create", transaction)
+        #     print("after_begin", transaction)
         #     session._commit_objects.push()
         #     #session._commit_objects.append(_Commit_Objects())
-        #
-        # @event.listens_for(cls, "after_transaction_end")
-        # def transaction_exit(session: Session, transaction):
-        #     print("exit", transaction)
-        #     session._commit_objects.pop()
-        #     #session._commit_objects = session._commit_objects[:-1]
 
     def _add_before_commit_object(self, obj, action):
         #self._commit_objects._add_before_commit_object(obj, action)
