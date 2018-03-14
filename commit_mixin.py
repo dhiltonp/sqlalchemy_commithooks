@@ -3,6 +3,7 @@ from contextlib import contextmanager
 
 from sqlalchemy import event
 from sqlalchemy.orm import object_session
+from sqlalchemy.orm.session import SessionTransaction
 
 
 def _build_add_func(time, action):
@@ -194,13 +195,15 @@ class Session:
         self._do_commits('before')
 
     def _do_after_commits(self):
-        self._do_commits('after')
+        with _tmp_transaction(self) as session:
+            session._do_commits('after')
         # reset failed commit lists, too
         self._commit_objects.failed.clear()
         self._commit_objects.lock = False
 
     def _do_failed_commits(self):
-        self._do_commits('failed')
+        with _tmp_transaction(self) as session:
+            session._do_commits('failed')
         # reset failed commit lists, too
         self._commit_objects.after.clear()
         self._commit_objects.lock = False
@@ -218,15 +221,15 @@ class Session:
                     getattr(obj, func)()
         objects.clear()
 
-#
-# @contextmanager
-# def _tmp_transaction(session: Session):
-#     """
-#     _do_after_commits is called within a transaction.commit()
-#     As such, queries cannot be called within it.
-#     Fix it by providing a temporary transaction.
-#     """
-#     #current_transaction = session.transaction
-#     #session.transaction = SessionTransaction(session)
-#     yield session
-#     #session.transaction = current_transaction
+
+@contextmanager
+def _tmp_transaction(session: Session):
+    """
+    _do_after_commits is called within a transaction.commit()
+    As such, queries cannot be called within it.
+    Fix it by providing a temporary transaction.
+    """
+    current_transaction = session.transaction
+    session.transaction = SessionTransaction(session)
+    yield session
+    session.transaction = current_transaction

@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 import pytest
 from mock import Mock
 from sqlalchemy import Column, Integer
@@ -101,10 +103,10 @@ class TestHookLookup:
 
 
 
-# @contextmanager
-# def _tmp_transaction_patch(session: Session):
-#     """needed for _do_after_commit"""
-#     yield session
+@contextmanager
+def _tmp_transaction_patch(session: Session):
+    """needed for _do_after_commit"""
+    yield session
 
 
 class TestAddCommitObject:
@@ -117,7 +119,6 @@ class TestAddCommitObject:
 
     def test_add_before_commit_object(self, monkeypatch):
         session = self.FakeSession()
-        #monkeypatch.setattr(commit_mixin, '_tmp_transaction', _tmp_transaction_patch)
         obj = Mock()
         for type_ in ['delete', 'insert', 'update', 'update']:
             session._add_before_commit_object(obj, type_)
@@ -127,7 +128,6 @@ class TestAddCommitObject:
 
     def test_add_after_commit_object(self, monkeypatch):
         session = self.FakeSession()
-        #monkeypatch.setattr(commit_mixin, '_tmp_transaction', _tmp_transaction_patch)
         obj = Mock()
         for type_ in ['delete', 'delete']:
             session._add_after_commit_object(obj, type_)
@@ -147,7 +147,7 @@ class TestAddCommitObject:
 
     def test_do_after_commits(self, monkeypatch):
         session = self.FakeSession()
-        #monkeypatch.setattr(commit_mixin, '_tmp_transaction', _tmp_transaction_patch)
+        monkeypatch.setattr(commit_mixin, '_tmp_transaction', _tmp_transaction_patch)
         obj = Mock()
 
         session._add_after_commit_object(obj, 'insert')
@@ -217,6 +217,49 @@ def test_end_to_end():
 
 
 Base = declarative_base()
+
+class TestQueriesAtCommit:
+    class Foo(Base):
+        __tablename__ = "foo"
+        id = Column(Integer, primary_key=True)
+
+    class Data(Base, commit_mixin.MappedClass):
+        __tablename__ = "data2"
+        id = Column(Integer, primary_key=True)
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def before_commit_from_insert(self):
+            self._sa_instance_state.session.query(TestQueriesAtCommit.Foo).all()
+
+        def after_commit_from_delete(self):
+            self._sa_instance_state.session.query(TestQueriesAtCommit.Foo).all()
+
+    def get_session(self):
+        engine = create_engine('sqlite:///:memory:')
+        self.Foo.__table__.create(bind=engine)
+        self.Data.__table__.create(bind=engine)
+
+        class OurSession(commit_mixin.Session, Session):
+            pass
+
+        SessionMaker = sessionmaker(class_=OurSession, bind=engine)
+        return SessionMaker()
+
+    def test_before_commit(self):
+        session = self.get_session()
+        session.add(self.Data())
+        session.commit()
+
+    def test_after_commit(self):
+        session = self.get_session()
+        d = self.Data()
+        session.add(d)
+        session.commit()
+
+        session.delete(d)
+        session.commit()
 
 
 class TestMappedClassHooks:
