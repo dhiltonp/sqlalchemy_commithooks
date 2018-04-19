@@ -314,20 +314,20 @@ class TestMappedClassHooks:
         session.add(outer_data)
 
         session.begin(subtransactions=True)
-        try:
-            #bad_flush_data = self.Data(id=1)
+        with pytest.raises(Exception):
+            bad_flush_data = self.Data(id=1)
             session.add(self.Data())
             session.commit()
-        except:
-            session.rollback()
-            raise
-            # flush fails in before_commit hook, skip commit on rollback.
-            # outer_data.assert_never_committed()
-            # bad_flush_data.assert_never_committed()
+        # except
+        session.rollback()
+        # flush fails in before_commit hook, skip commit on rollback.
+        outer_data.assert_never_committed()
+        bad_flush_data.assert_never_committed()
+        # end except
 
         session.commit()
         outer_data.assert_regular_commit()
-        #bad_flush_data.assert_never_committed()
+        bad_flush_data.assert_never_committed()
 
 
     def test_nested_bad_flush(self):
@@ -336,43 +336,43 @@ class TestMappedClassHooks:
         session.add(outer_data)
 
         session.begin_nested()
-        try:
+        with pytest.raises(Exception):
             bad_flush_data = self.Data(id=1)
             session.add(bad_flush_data)
             session.commit()
-        except:
-            session.rollback()
-            # flush fails in before_commit hook, skip commit on rollback.
-            outer_data.assert_never_committed()
-            bad_flush_data.assert_never_committed()
+        # except
+        session.rollback()
+        # flush fails in before_commit hook, skip commit on rollback.
+        outer_data.assert_never_committed()
+        bad_flush_data.assert_never_committed()
+        # end except
 
         session.commit()
         outer_data.assert_regular_commit()
         bad_flush_data.assert_never_committed()
 
-    @pytest.mark.skip(reason="nested commit support not yet implemented")
     def test_nested_bad_commit(self, monkeypatch):
         session = self.get_session()
         outer_data = self.Data()
         session.add(outer_data)
 
         session.begin_nested()
-        try:
+        with pytest.raises(Exception):
             bad_flush_data = self.Data()
             session.add(bad_flush_data)
             monkeypatch.delattr('sqlalchemy.engine.base.Transaction.commit')
             session.commit()
-        except Exception as e:
-            session.rollback()
-            # outer_data.assert_never_committed()
-            # bad_flush_data.assert_failed_commit()
+        # except
+        session.rollback()
+        outer_data.assert_never_committed()
+        bad_flush_data.assert_failed_commit()
+        # end except
 
         monkeypatch.undo()
         session.commit()
         outer_data.assert_regular_commit()
         bad_flush_data.assert_failed_commit()
 
-    @pytest.mark.skip(reason="nested commit support not yet implemented")
     def test_multiple_good_commits(self):
         session = self.get_session()
         data1 = self.Data()
@@ -386,7 +386,6 @@ class TestMappedClassHooks:
         data1.assert_regular_commit()
         data2.assert_regular_commit()
 
-    @pytest.mark.skip(reason="nested commit support not yet implemented")
     def test_multiple_bad_commits(self, monkeypatch):
         session = self.get_session()
 
