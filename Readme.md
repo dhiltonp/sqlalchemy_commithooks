@@ -20,20 +20,28 @@ If a mapped class is inserted (flushed), updated (flushed), deleted (flushed)
 and then commit is called, all methods will execute.
 
 Updates in before_commit_* will be applied, but will not cascade/trigger any 
-\*\_commit\_from\_\* calls (**TODO**: add cascade option)
+\*\_commit\_from\_\* calls.
 
 ##### Limitations
 
-commit_mixin is not perfect. As an example, it is not perfectly robust 
-against network outages.
+commit_mixin cannot solve all problems. As an example, it is not perfectly robust 
+against network outages:
 
-DB Insert, s3 put in before_commit, (network outage), DB commit <- fails,
-s3 delete in failed_commit <- fails.
-
+    DB.add(mapped_object)
+    DB.commit()
+      before_commit_from_insert is run, puts an object into s3
+      network outage occurs now
+      actual commit to DB fails (network outage)
+      failed_commit_from_insert is run, fails to remove object from s3
+      
 For each use case, you must determine what has priority.
-Should an event notification be sent if the DB commit fails?
-Or should an event notification possibly not be sent if the commit succeeds?
+
+Should an notification be sent if the DB commit fails (notification is sent,
+then network outage preventing full commit)? Or should an event notification 
+possibly not be sent if the commit succeeds (transaction is committed, network 
+outage prevents notification)?
 
 #### TODO
 
-add session.nested_transaction support
+* add session.nested_transaction support
+* add cascade option
