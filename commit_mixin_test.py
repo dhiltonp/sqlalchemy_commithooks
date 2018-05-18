@@ -5,10 +5,10 @@ from mock import Mock
 from sqlalchemy import Column, Integer
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 
 from . import commit_mixin
-from .commit_mixin import _build_add_func
+from .commit_mixin import _build_add_func, Session
 
 
 def test_build_add_func_time(monkeypatch):
@@ -201,10 +201,7 @@ def test_end_to_end():
     engine = create_engine('sqlite:///:memory:')
     Data.__table__.create(bind=engine)
 
-    class OurSession(commit_mixin.Session, Session):
-        pass
-
-    SessionMaker = sessionmaker(class_=OurSession, bind=engine)
+    SessionMaker = sessionmaker(class_=Session, bind=engine)
     session = SessionMaker()
 
     data = Data()
@@ -241,10 +238,7 @@ class TestQueriesAtCommit:
         self.Foo.__table__.create(bind=engine)
         self.Data.__table__.create(bind=engine)
 
-        class OurSession(commit_mixin.Session, Session):
-            pass
-
-        SessionMaker = sessionmaker(class_=OurSession, bind=engine)
+        SessionMaker = sessionmaker(class_=Session, bind=engine)
         return SessionMaker()
 
     def test_before_commit(self):
@@ -302,10 +296,7 @@ class TestMappedClassHooks:
         engine = create_engine('sqlite:///:memory:')
         self.Data.__table__.create(bind=engine)
 
-        class OurSession(commit_mixin.Session, Session):
-            pass
-
-        SessionMaker = sessionmaker(class_=OurSession, bind=engine)
+        SessionMaker = sessionmaker(class_=Session, bind=engine)
         return SessionMaker()
 
     def test_subtransaction(self):

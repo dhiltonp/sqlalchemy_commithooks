@@ -1,3 +1,4 @@
+import sqlalchemy
 from collections import defaultdict
 from contextlib import contextmanager
 
@@ -20,7 +21,7 @@ class MappedClass:
     """
     Mixin to any class derived from Base.
     Define methods like "after_commit_from_delete".
-    Combinations: (after/before)_commit_from_(insert/update/delete)
+    Combinations: (before/after/failed)_commit_from_(insert/update/delete)
 
     These methods will automatically be called around commit time.
     """
@@ -117,19 +118,19 @@ class _CommitObjects:
 #     def _add_failed_commit_object(self, obj, action):
 #         self.stack[-3].failed[obj].add(action)
 
+# todo:
 # make it easier to see which events are going to happen on a given object... somehow...
 #  maybe _commit_actions[] on the object?
 
-class Session:
+class Session(sqlalchemy.orm.Session):
     """
-    Session Mixin
-    Automatically calls "after_commit" after a successful commit on
-    every instance of After_Commit_Insert or After_Commit_Delete
+    Session
+    Automatically calls commit hooks before, after or on a failed commit.
 
-    The mixin must come before sqlalchemy.Session in the inheritance
-    list to override __init__, as sqlalchemy.Session doesn't call super().
-    The class will raise an exception on insertion if such a condition is
-    detected.
+    If used as a mixin it must come before sqlalchemy.Session in the
+    inheritance list to override __init__, as sqlalchemy.Session doesn't
+    call super(). The class will raise an exception on insertion if
+    such a condition is detected.
     """
     transaction = None
 
@@ -204,7 +205,7 @@ class Session:
     def _do_failed_commits(self):
         with _tmp_transaction(self) as session:
             session._do_commits('failed')
-        # reset failed commit lists, too
+        # reset after commit lists, too
         self._commit_objects.after.clear()
         self._commit_objects.lock = False
 
