@@ -1,1 +1,1 @@
-from .commit_mixin import Session, MappedClass
+from .commit_mixin import Session, CommitMixin

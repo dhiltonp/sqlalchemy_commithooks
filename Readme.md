@@ -18,9 +18,9 @@ Use sqlalchemy_commithooks.Session instead of sqlalchemy.orm.Session:
 
     session = sqlalchemy_commithooks.Session()
 
-Add sqlalchemy_commithooks.MappedClass to your mapped class and use any of 9 hooks:
+Add sqlalchemy_commithooks.CommitMixin to your mapped class and use any of 9 hooks:
 
-    class Data(Base, sqlalchemy_commithooks.MappedClass):
+    class Data(Base, sqlalchemy_commithooks.CommitMixin):
         def before_commit_from_insert(self):
             pass
 

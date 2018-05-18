@@ -26,7 +26,7 @@ def test_build_add_func_time(monkeypatch):
 
 
 class TestHookRegistration:
-    class Hook(commit_mixin.MappedClass):
+    class Hook(commit_mixin.CommitMixin):
         pass
 
     def test_one(self, monkeypatch):
@@ -43,18 +43,18 @@ class TestHookRegistration:
     def test_all(self, monkeypatch):
         event = Mock()
         monkeypatch.setattr(commit_mixin, 'event', event)
-        hooks = commit_mixin.MappedClass._lookup_hooks()
-        commit_mixin.MappedClass._register_hooks(hooks)
+        hooks = commit_mixin.CommitMixin._lookup_hooks()
+        commit_mixin.CommitMixin._register_hooks(hooks)
 
         assert event.listen.call_count == 9
         for e in event.listen.call_args_list:
             cls_, event_, func_ = e[0]
-            assert cls_ == commit_mixin.MappedClass
+            assert cls_ == commit_mixin.CommitMixin
             assert event_ in ['after_insert', 'after_update', 'after_delete']
 
 
 class TestHookLookup:
-    class Direct(commit_mixin.MappedClass):
+    class Direct(commit_mixin.CommitMixin):
         def before_commit_from_update(self):
             pass
 
@@ -184,7 +184,7 @@ class TestAddCommitObject:
 def test_end_to_end():
     Base = declarative_base()
 
-    class Data(Base, commit_mixin.MappedClass):
+    class Data(Base, commit_mixin.CommitMixin):
         __tablename__ = "data"
         id = Column(Integer, primary_key=True)
 
@@ -220,7 +220,7 @@ class TestQueriesAtCommit:
         __tablename__ = "foo"
         id = Column(Integer, primary_key=True)
 
-    class Data(Base, commit_mixin.MappedClass):
+    class Data(Base, commit_mixin.CommitMixin):
         __tablename__ = "data2"
         id = Column(Integer, primary_key=True)
 
@@ -256,9 +256,9 @@ class TestQueriesAtCommit:
         session.commit()
 
 
-class TestMappedClassHooks:
+class TestCommitMixinHooks:
     """verify correct behavior with the hooks we have selected"""
-    class Data(Base, commit_mixin.MappedClass):
+    class Data(Base, commit_mixin.CommitMixin):
         __tablename__ = "data"
         id = Column(Integer, primary_key=True)
 

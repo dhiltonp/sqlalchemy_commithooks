@@ -17,7 +17,7 @@ def _build_add_func(time, action):
     return add_object
 
 
-class MappedClass:
+class CommitMixin:
     """
     Mixin to any class derived from Base.
     Define methods like "after_commit_from_delete".
@@ -45,14 +45,14 @@ class MappedClass:
 
         overridden = set()
         for hook in hooks:
-            if getattr(MappedClass, hook) != getattr(cls, hook):
+            if getattr(CommitMixin, hook) != getattr(cls, hook):
                 overridden.add(hook)
 
         return overridden
 
     @classmethod
     def _lookup_hooks(cls):
-        return {m for m in MappedClass.__dict__.keys() if '_commit_from_' in m}
+        return {m for m in CommitMixin.__dict__.keys() if '_commit_from_' in m}
 
     __err = 'Override to add hooks'
 
