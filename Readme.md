@@ -14,7 +14,8 @@ There is no overhead if a commit hook is unused.
 
 #### Getting Started
 
-Use sqlalchemy_commithooks.Session instead of sqlalchemy.orm.Session:
+Use sqlalchemy_commithooks.Session instead of sqlalchemy.orm.Session.
+SessionMixin is also defined, if you are already subclassing Session:
 
     session = sqlalchemy_commithooks.Session()
 

@@ -122,15 +122,15 @@ class _CommitObjects:
 # make it easier to see which events are going to happen on a given object... somehow...
 #  maybe _commit_actions[] on the object?
 
-class Session(sqlalchemy.orm.Session):
+
+class SessionMixin:
     """
-    Session
+    SessionMixin
     Automatically calls commit hooks before, after or on a failed commit.
 
-    If used as a mixin it must come before sqlalchemy.Session in the
-    inheritance list to override __init__, as sqlalchemy.Session doesn't
-    call super(). The class will raise an exception on insertion if
-    such a condition is detected.
+    It must come before sqlalchemy.SessionMixin in the inheritance list to
+    override __init__, as sqlalchemy.Session doesn't call super(). The class
+    will raise an exception on insertion if such a condition is detected.
     """
     transaction = None
 
@@ -223,8 +223,22 @@ class Session(sqlalchemy.orm.Session):
         objects.clear()
 
 
+class Session(SessionMixin, sqlalchemy.orm.Session):
+    """
+    Session can be used in place of sqlalchemy.orm.Session.
+
+    If multiple mixins are used, you'll have to create your own session class
+    with mixins coming before the sqlalchemy.orm.Session (or any class that
+    inherits from it) in the inheritance list.
+
+    This is because sqlalchemy's Session doesn't call super and SessionMixin's
+    __init__ would not be called.
+    """
+    pass
+
+
 @contextmanager
-def _tmp_transaction(session: Session):
+def _tmp_transaction(session: SessionMixin):
     """
     _do_after_commits is called within a transaction.commit()
     As such, queries cannot be called within it.
