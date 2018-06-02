@@ -8,7 +8,7 @@ This is useful for maintaining consistency with external systems, for example:
  * redis queue synchronization
 
 sqlalchemy_commithooks requires Python >=3.6. This would be hard (impossible?)
-to get around without modifying sqlalchemy.
+to get around without changing the API or modifying sqlalchemy.
 
 There is no overhead if a commit hook is unused.
 
