@@ -1,1 +1,1 @@
-from .commit_mixin import Session, CommitMixin
+from .commit_mixin import Session, SessionMixin, CommitMixin
