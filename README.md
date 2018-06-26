@@ -19,13 +19,17 @@ There is no overhead if a commit hook is unused.
 Use sqlalchemy_commithooks.Session instead of sqlalchemy.orm.Session.
 SessionMixin is also defined, if you are already subclassing Session:
 
-    session = sqlalchemy_commithooks.Session()
+```python
+session = sqlalchemy_commithooks.Session()
+```
 
 Add sqlalchemy_commithooks.CommitMixin to your mapped class and use any of 9 hooks:
 
-    class Data(Base, sqlalchemy_commithooks.CommitMixin):
-        def before_commit_from_insert(self):
-            pass
+```python
+class Data(Base, sqlalchemy_commithooks.CommitMixin):
+    def before_commit_from_insert(self):
+        pass
+```
 
 The hooks are available for all combinations of (`before`,
 `after`, `failed`) and (`insert`, `update`, `delete`).
@@ -55,12 +59,14 @@ Updates in before_commit_* will be applied, but will not cascade/trigger any
 sqlalchemy_commithooks cannot solve all problems. As an example, it is not
 perfectly robust against network outages:
 
-    DB.add(mapped_object)
-    DB.commit()
-      before_commit_from_insert is run, puts an object into s3
-      network outage occurs now
-      actual commit to DB fails (network outage)
-      failed_commit_from_insert is run, fails to remove object from s3
+```python
+DB.add(mapped_object)
+DB.commit()
+#  before_commit_from_insert is run, puts an object into s3
+#  network outage occurs now
+#  actual commit to DB fails (network outage)
+#  failed_commit_from_insert is run, fails to remove object from s3
+```
       
 For each use case, you must determine what has priority.
 
