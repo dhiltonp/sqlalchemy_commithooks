@@ -41,9 +41,9 @@ will fire, assuming two conditions are met.
 2. [You are using sqlalchemy's recommended transaction semantics
 (commit/rollback)](http://docs.sqlalchemy.org/en/latest/orm/session_basics.html#when-do-i-construct-a-session-when-do-i-commit-it-and-when-do-i-close-it).
 
-If a mapped class is inserted (flushed), updated (flushed), deleted (flushed)
-and then commit is called, all methods would execute in that order even though
-the object will not persist after the commit.
+If an object is inserted (flushed), updated (flushed), deleted (flushed)
+and then commit is called, insert/update/delete methods will execute (in
+that order) even though the object will not persist after the commit.
 
 Updates in before_commit_* will be applied, but will not cascade/trigger any 
 \*\_commit\_from\_\* calls.
@@ -71,3 +71,4 @@ outage prevents notification)?
 
 * add session.nested_transaction support
 * add cascade option
+* make it easy to see which hooks will run in the debugger

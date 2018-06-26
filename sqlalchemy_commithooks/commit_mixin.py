@@ -146,7 +146,7 @@ class SessionMixin:
     @classmethod
     def _register_commit_hooks(cls):
         @event.listens_for(cls, "before_commit")
-        def before_commit(session: Session):
+        def before_commit(session: 'SessionMixin'):
             # before_commit event occurs before flush inside commit.
             #  flush is where after_insert etc. events occur.
             #  run flush now to guarantee that all objects have
@@ -157,20 +157,20 @@ class SessionMixin:
             session._do_before_commits()
 
         @event.listens_for(cls, "after_commit")
-        def after_commit(session: Session):
+        def after_commit(session: 'SessionMixin'):
             # print("after_commit")
             session._after_failed_commit_active = False
             session._do_after_commits()
 
         @event.listens_for(cls, "after_soft_rollback")
-        def after_failed_commit(session: Session, transaction):
+        def after_failed_commit(session: 'SessionMixin', transaction):
             # print("after_failed_commit")
             if session._after_failed_commit_active:
                 session._do_failed_commits()
             session._after_failed_commit_active = False
 
         # @event.listens_for(cls, "after_begin")
-        # def transaction_enter(session: Session, transaction):
+        # def transaction_enter(session: 'SessionMixin', transaction):
         #     print("after_begin", transaction)
         #     session._commit_objects.push()
         #     #session._commit_objects.append(_Commit_Objects())
