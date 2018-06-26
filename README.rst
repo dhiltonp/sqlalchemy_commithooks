@@ -1,3 +1,6 @@
+Overview
+~~~~~~~~
+
 sqlalchemy_commithooks allows actions to be deferred until commit time.
 It also allows for objects to take action if a commit *fails*.
 
@@ -15,7 +18,7 @@ sqlalchemy.
 There is no overhead if a commit hook is unused.
 
 Getting Started
-^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~
 
 Use sqlalchemy_commithooks.Session instead of sqlalchemy.orm.Session.
 SessionMixin is also defined, if you are already subclassing Session:
@@ -40,7 +43,7 @@ Simply override methods like ``before_commit_from_insert``,
 ``failed_commit_from_insert``, ``after_commit_from_delete`` etc.
 
 Usage Notes
-^^^^^^^^^^^
+~~~~~~~~~~~
 
 before_commit_\* will always fire, and one of after_commit_\* or
 failed_commit_\* will fire, assuming two conditions are met.
@@ -57,7 +60,7 @@ Updates in before_commit_\* will be applied, but will not
 cascade/trigger any \*_commit_from_\* calls.
 
 Limitations
-'''''''''''
+~~~~~~~~~~~
 
 sqlalchemy_commithooks cannot solve all problems. As an example, it is
 not perfectly robust against network outages:
@@ -80,7 +83,7 @@ notification possibly not be sent if the commit succeeds (transaction is
 committed, network outage prevents notification)?
 
 TODO
-^^^^
+~~~~
 
 -  add session.nested_transaction support
 -  add cascade option
