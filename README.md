@@ -40,10 +40,10 @@ Simply override methods like `before_commit_from_insert`, `failed_commit_from_in
 
 # Usage Notes
 
-before_commit_* will always fire, and one of after_commit_* or failed_commit_*
+before_commit_from_* will always fire, and one of after_commit_from_* or failed_commit_from_*
 will fire, assuming two conditions are met.
 
-1. You handle your own exceptions in your \*\_commit_from\_\* handlers.
+1. You handle your own exceptions in your \*\_commit\_from\_\* handlers.
 2. [You are using sqlalchemy's recommended transaction semantics
 (commit/rollback)](http://docs.sqlalchemy.org/en/latest/orm/session_basics.html#when-do-i-construct-a-session-when-do-i-commit-it-and-when-do-i-close-it).
 
@@ -51,7 +51,7 @@ If an object is inserted (flushed), updated (flushed), deleted (flushed)
 and then commit is called, insert/update/delete methods will execute (in
 that order) even though the object will not persist after the commit.
 
-Updates in before_commit_* will be applied, but will not cascade/trigger any 
+Updates in before_commit_from_* will be applied, but will not cascade/trigger any 
 \*\_commit\_from\_\* calls.
 
 ## Limitations
